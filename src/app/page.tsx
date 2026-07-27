@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { getPosts, Post } from "@/lib/sanity";
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
@@ -271,7 +271,7 @@ export default function Home() {
             <button 
               id="header-btn-join" 
               onClick={() => setIsJoinModalOpen(true)}
-              className="rounded-full bg-brand-navy px-5 py-2 text-xs font-semibold text-white shadow-md hover:bg-brand-orange hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+              className="rounded-full bg-brand-navy px-5 py-2.5 min-h-[44px] text-xs font-semibold text-white shadow-md hover:bg-brand-orange hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
             >
               Join the Pack
             </button>
@@ -283,11 +283,11 @@ export default function Home() {
       <main className="flex-1">
         
         {/* Hero Section */}
-        <section id="interactive" className="relative py-20 lg:py-28 bg-transparent">
+        <section id="interactive" className="relative py-10 sm:py-20 lg:py-28 bg-transparent">
           
           {/* Decorative glows */}
-          <div className="absolute top-0 right-1/4 -z-10 h-[600px] w-[600px] rounded-full bg-orange-100/10 blur-3xl" />
-          <div className="absolute bottom-0 left-10 -z-10 h-[500px] w-[500px] rounded-full bg-amber-100/10 blur-3xl" />
+          <div className="absolute top-0 right-1/4 -z-10 h-[600px] w-[600px] rounded-full bg-orange-100/10 blur-3xl hidden sm:block" />
+          <div className="absolute bottom-0 left-10 -z-10 h-[500px] w-[500px] rounded-full bg-amber-100/10 blur-3xl hidden sm:block" />
 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-8">
@@ -296,7 +296,8 @@ export default function Home() {
               <div className="lg:col-span-6 flex flex-col justify-center text-center lg:text-left">
                 <div className="inline-flex items-center gap-2 rounded-full border border-orange-100 bg-orange-50/50 px-3.5 py-1 text-xs font-semibold text-brand-orange mb-6 mx-auto lg:mx-0 w-fit">
                   <span className="flex h-2 w-2 rounded-full bg-brand-orange animate-ping" />
-                  Scroll Down to Crossfade Background Video
+                  <span className="hidden sm:inline">Scroll Down to Crossfade Background Video</span>
+                  <span className="sm:hidden">Scroll to Explore</span>
                 </div>
                 
                 <h1 className="font-display text-4xl font-extrabold tracking-tight text-brand-navy sm:text-5xl md:text-6xl leading-tight">
@@ -349,7 +350,7 @@ export default function Home() {
                 <div className="w-full max-w-[440px] flex flex-col gap-5">
                   
                   {/* Interactive Video Container with bounce effect */}
-                  <div className={`relative w-full aspect-square rounded-3xl bg-gradient-to-tr from-orange-100/40 to-amber-100/30 p-4 shadow-premium border border-white/80 transition-all duration-300 ${
+                  <div className={`relative w-full aspect-video sm:aspect-square rounded-3xl bg-gradient-to-tr from-orange-100/40 to-amber-100/30 p-4 shadow-premium border border-white/80 transition-all duration-300 ${
                     isBouncing ? "scale-105 -rotate-2" : "hover:scale-[1.01]"
                   }`}>
                     
@@ -377,13 +378,13 @@ export default function Home() {
                     </div>
                     
                     {/* Floating badge */}
-                    <div className="absolute top-8 left-8 rounded-full bg-black/45 backdrop-blur-md px-3 py-1 text-[10px] text-white/90 font-semibold tracking-wide border border-white/10 uppercase select-none">
+                    <div className="absolute top-8 left-8 rounded-full bg-black/45 backdrop-blur-md px-3 py-1 text-[11px] text-white/90 font-semibold tracking-wide border border-white/10 uppercase select-none">
                       • Live Feed
                     </div>
 
                     {/* Interactive Speed Overlay Indicator */}
                     {videoSpeed !== 1 && (
-                      <div className="absolute top-8 right-8 rounded-full bg-brand-orange/90 backdrop-blur-sm px-2.5 py-0.5 text-[9px] text-white font-bold tracking-wider uppercase select-none shadow">
+                      <div className="absolute top-8 right-8 rounded-full bg-brand-orange/90 backdrop-blur-sm px-2.5 py-0.5 text-[11px] text-white font-bold tracking-wider uppercase select-none shadow">
                         Speed: {videoSpeed}x
                       </div>
                     )}
@@ -406,7 +407,7 @@ export default function Home() {
                           key={spd.val}
                           id={`speed-btn-${spd.id}`}
                           onClick={() => setVideoSpeed(spd.val)}
-                          className={`rounded-full px-3 py-1.5 text-[10px] font-bold border transition-all ${
+                          className={`rounded-full px-3 py-2 text-[11px] font-bold border transition-all min-h-[36px] ${
                             videoSpeed === spd.val
                               ? "bg-brand-orange border-brand-orange text-white shadow-sm"
                               : "bg-white border-slate-200 text-slate-500 hover:border-orange-200"
@@ -426,7 +427,7 @@ export default function Home() {
         </section>
 
         {/* Articles Section */}
-        <section id="articles" className="py-24 bg-white/40 backdrop-blur-xs border-t border-slate-100">
+        <section id="articles" className="py-12 sm:py-24 bg-white/40 backdrop-blur-sm border-t border-slate-100">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             
             {/* Section Header */}
@@ -442,7 +443,7 @@ export default function Home() {
             </div>
 
             {/* Category Filter Tabs */}
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-10 border-b border-slate-100 pb-6 text-xs font-bold">
+            <div className="flex overflow-x-auto flex-nowrap items-center gap-2 mb-10 border-b border-slate-100 pb-6 text-xs font-bold -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
               {[
                 { name: "All", label: "📋 All Articles", count: posts.length },
                 { name: "Health & Wellness", label: "🩺 Health & Wellness", count: posts.filter(p => p.category === "Health & Wellness").length },
@@ -489,10 +490,10 @@ export default function Home() {
             ) : (
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {filteredPosts.map((post) => (
-                  <article 
+                  <Link
                     key={post.id}
-                    onClick={() => setSelectedPost(post)}
-                    className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow-premium-hover hover:border-orange-200/50 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+                    href={`/articles/${post.slug.current}`}
+                    className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow-premium-hover hover:border-orange-200/50 transition-all duration-300 transform hover:-translate-y-1"
                   >
                     <div>
                       {/* Post Category */}
@@ -534,7 +535,7 @@ export default function Home() {
                         <div className="text-[10px] text-slate-400">{post.author.role} • {post.publishedAt}</div>
                       </div>
                     </div>
-                  </article>
+                  </Link>
                 ))}
               </div>
             )}
@@ -542,101 +543,15 @@ export default function Home() {
         </section>
       </main>
 
-      {/* Centered Article Detail Modal */}
-      {selectedPost && (
-        <>
-          {/* Backdrop layer */}
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in cursor-pointer" onClick={() => setSelectedPost(null)} />
-          
-          {/* Modal centering layer */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 lg:p-12 pointer-events-none">
-          <div className="relative w-full max-w-4xl max-h-[92vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200/60 animate-scale-in flex flex-col pointer-events-auto mx-auto">
-            
-            {/* Sticky Close Button — always visible */}
-            <button 
-              onClick={() => setSelectedPost(null)}
-              className="absolute top-5 right-5 z-10 h-10 w-10 rounded-full bg-white/90 hover:bg-orange-50 flex items-center justify-center text-slate-500 hover:text-brand-orange font-bold text-base shadow-md border border-slate-200/60 transition-all hover:scale-105 cursor-pointer"
-            >
-              ✕
-            </button>
-
-            {/* Scrollable Content Area */}
-            <div className="overflow-y-auto flex-1 overscroll-contain">
-
-              {/* Full-Bleed Cover Image Hero */}
-              <div className="w-full h-56 sm:h-64 md:h-72 bg-slate-100 relative">
-                <img 
-                  src={getFirstImageUrl(selectedPost.body, selectedPost.category)} 
-                  alt={selectedPost.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-              </div>
-
-              {/* Article Header & Body — centered with generous padding */}
-              <div className="px-8 sm:px-12 md:px-16 lg:px-20 py-8 sm:py-10">
-                <div className="max-w-2xl mx-auto">
-
-                  {/* Category Badge */}
-                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold border ${selectedPost.categoryColor} mb-5`}>
-                    {selectedPost.category}
-                  </span>
-
-                  {/* Title */}
-                  <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold text-brand-navy leading-tight tracking-tight">
-                    {selectedPost.title}
-                  </h2>
-
-                  {/* Author Meta */}
-                  <div className="mt-6 flex items-center gap-4 pb-8 mb-8 border-b border-slate-100">
-                    <div className={`h-11 w-11 rounded-full ${selectedPost.author.avatarColor} flex items-center justify-center text-sm font-bold shrink-0`}>
-                      {selectedPost.author.name.split(" ").map(n => n[0]).join("")}
-                    </div>
-                    <div>
-                      <div className="text-sm font-bold text-brand-navy">{selectedPost.author.name}</div>
-                      <div className="text-xs text-slate-400 mt-0.5">{selectedPost.author.role} · {selectedPost.publishedAt} · {selectedPost.readTime}</div>
-                    </div>
-                  </div>
-
-                  {/* Article Body */}
-                  <div className="prose prose-orange max-w-none text-slate-600 leading-relaxed text-base space-y-5 article-content">
-                    {selectedPost.body.trim().startsWith("<") ? (
-                      <div dangerouslySetInnerHTML={{ __html: selectedPost.body }} />
-                    ) : (
-                      selectedPost.body.split("\n\n").map((para, i) => (
-                        <p key={i}>{para}</p>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Footer */}
-                  <div className="mt-14 pt-6 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
-                    <span>Published by {brandName} CMS</span>
-                    <button 
-                      onClick={() => setSelectedPost(null)}
-                      className="font-bold text-brand-navy hover:text-brand-orange transition-colors cursor-pointer"
-                    >
-                      ← Back to Articles
-                    </button>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-          </div>
-          </div>
-        </>
-      )}
-
       {/* 3D Dog Name Generator Modal */}
       {isJoinModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-xs transition-opacity p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-sm transition-opacity p-4">
           <div className="absolute inset-0" onClick={() => setIsJoinModalOpen(false)} />
           
           <div className="relative w-full max-w-xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 animate-slide-in grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
             <button 
               onClick={() => setIsJoinModalOpen(false)}
-              className="absolute top-4 right-4 h-8 w-8 rounded-full bg-slate-100 hover:bg-orange-100 flex items-center justify-center text-slate-500 hover:text-brand-orange font-bold text-sm transition-all"
+              className="absolute top-4 right-4 h-10 w-10 rounded-full bg-slate-100 hover:bg-orange-100 flex items-center justify-center text-slate-500 hover:text-brand-orange font-bold text-sm transition-all"
             >
               ✕
             </button>
@@ -670,7 +585,7 @@ export default function Home() {
                     <button
                       key={g}
                       onClick={() => setSelectedGender(g)}
-                      className={`py-1.5 rounded-lg border transition-all text-[10px] font-bold ${
+                      className={`py-2.5 rounded-lg border transition-all text-[11px] font-bold min-h-[36px] ${
                         selectedGender === g
                           ? "bg-brand-navy border-brand-navy text-white"
                           : "bg-white border-slate-200 text-slate-500 hover:border-orange-200"
@@ -690,7 +605,7 @@ export default function Home() {
                     <button
                       key={v}
                       onClick={() => setSelectedVibe(v)}
-                      className={`py-1.5 rounded-lg border transition-all text-[10px] font-bold ${
+                      className={`py-2.5 rounded-lg border transition-all text-[11px] font-bold min-h-[36px] ${
                         selectedVibe === v
                           ? "bg-brand-orange border-brand-orange text-white shadow-sm"
                           : "bg-white border-slate-200 text-slate-500 hover:border-orange-200"
@@ -743,7 +658,7 @@ export default function Home() {
           <p className="text-xs text-slate-400">
             &copy; 2026 {brandName}. All rights reserved. Designed for dog enthusiasts worldwide.
           </p>
-          <div className="flex items-center gap-6 text-sm text-slate-500">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-sm text-slate-500">
             <a href="/about" id="footer-link-about" className="hover:text-brand-orange transition-colors">About Us</a>
             <a href="/contact" id="footer-link-contact" className="hover:text-brand-orange transition-colors">Contact</a>
             <a href="/privacy" id="footer-link-privacy" className="hover:text-brand-orange transition-colors">Privacy Policy</a>
