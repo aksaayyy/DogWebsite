@@ -1,19 +1,17 @@
 import { createClient } from "@sanity/client";
 
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
-const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "x4mx0fr5";
+const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
 
 export const isSanityConfigured = !!(projectId && dataset);
 
-// Initialize real client if configured, otherwise fallback to null
-export const client = isSanityConfigured
-  ? createClient({
-      projectId,
-      dataset,
-      apiVersion: "2026-07-22",
-      useCdn: true,
-    })
-  : null;
+// Initialize real client — always configured with fallback values
+export const client = createClient({
+  projectId,
+  dataset,
+  apiVersion: "2024-01-01",
+  useCdn: true,
+});
 
 export interface Post {
   id: number | string;
