@@ -191,10 +191,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                       <a
                         key={item.id}
                         href={`#${item.id}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" });
-                        }}
                         className={`block text-sm text-slate-600 hover:text-[#f97316] transition-colors ${item.level === 3 ? "pl-4 text-slate-400 text-xs" : "font-medium"}`}
                       >
                         {item.text}
