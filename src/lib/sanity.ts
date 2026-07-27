@@ -5,12 +5,11 @@ const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
 
 export const isSanityConfigured = !!(projectId && dataset);
 
-// Initialize real client — always configured with fallback values
 export const client = createClient({
   projectId,
   dataset,
   apiVersion: "2024-01-01",
-  useCdn: true,
+  useCdn: false,
 });
 
 export interface Post {
@@ -82,32 +81,17 @@ export const fallbackPosts: Post[] = [
 ];
 
 export async function getPosts(): Promise<Post[]> {
-  if (client) {
-    try {
-      const query = `*[_type == "post"] {
-        "id": _id,
-        title,
-        slug,
-        category,
-        categoryColor,
-        excerpt,
-        body,
-        readTime,
-        publishedAt,
-        author->{
-          name,
-          role,
-          avatarColor
-        }
-      }`;
-      const posts = await client.fetch(query);
+  try {
+    const res = await fetch("/api/posts", { next: { revalidate: 60 } });
+    if (res.ok) {
+      const posts = await res.json();
       if (posts && posts.length > 0) {
         return posts;
       }
-    } catch (error) {
-      console.warn("Sanity fetch failed, falling back to local mock data:", error);
     }
+  } catch (error) {
+    console.warn("API route fetch failed:", error);
   }
-  
+
   return fallbackPosts;
 }
