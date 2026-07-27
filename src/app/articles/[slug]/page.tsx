@@ -1,11 +1,6 @@
 import Link from "next/link";
-import { Viewport } from "next";
 import type { Metadata } from "next";
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-};
+import ArticleInteractivity from "./ArticleInteractivity";
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "x4mx0fr5";
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
@@ -39,16 +34,16 @@ async function getPost(slug: string) {
   }
 }
 
-async function getRelatedPosts(slug: string, category: string) {
+async function getRelatedPosts(slug: string) {
   const query = `*[_type == "post" && slug.current != "${slug}"] | order(publishedAt desc) [0...3] {
     "id": _id, title, slug, category, categoryColor, excerpt, readTime, publishedAt,
-    author->{ name, role, avatarColor }
+    body, author->{ name, role, avatarColor }
   }`;
   const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}`;
   try {
     const res = await fetch(url, { next: { revalidate: 60 } });
     const data = await res.json();
-    return data.result || [];
+    return (data.result || []).map((p: any) => ({ ...p, body: resolveAssetUrls(p.body || "") }));
   } catch {
     return [];
   }
@@ -93,7 +88,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [post, relatedPosts] = await Promise.all([getPost(slug), getRelatedPosts(slug, "")]);
+  const [post, relatedPosts] = await Promise.all([getPost(slug), getRelatedPosts(slug)]);
 
   if (!post) {
     return (
@@ -105,7 +100,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               <span className="text-4xl">🐕</span>
             </div>
             <h1 className="font-[var(--font-display)] text-2xl font-bold text-[#0f172a]">Article Not Found</h1>
-            <p className="text-slate-500 mt-2 text-sm max-w-md mx-auto">The article you are looking for does not exist or has been moved. Check our latest articles instead.</p>
+            <p className="text-slate-500 mt-2 text-sm max-w-md mx-auto">The article you are looking for does not exist or has been moved.</p>
             <Link href="/" className="inline-flex items-center gap-2 mt-6 rounded-full bg-[#0f172a] px-6 py-3 text-sm font-semibold text-white hover:bg-[#f97316] transition-all duration-300">
               ← Back to Home
             </Link>
@@ -124,8 +119,13 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     <div className="flex flex-col min-h-screen bg-[#fcfbf9]">
       <Header />
 
-      {/* Reading Progress Bar */}
-      <ReadingProgress />
+      {/* Interactive overlay — progress bar, TOC, floating buttons */}
+      <ArticleInteractivity
+        toc={toc}
+        title={post.title}
+        slug={slug}
+        readTime={post.readTime}
+      />
 
       <main className="flex-1">
         {/* Hero Section */}
@@ -136,9 +136,10 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 via-slate-900/50 to-slate-900" />
             </div>
           )}
-          <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16 sm:pt-16 sm:pb-20">
-            <Link href="/#articles" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-300 hover:text-[#f97316] transition-colors mb-8">
-              ← Back to Articles
+          <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-14 sm:pt-20 sm:pb-20 lg:pt-20 lg:pb-24">
+            <Link href="/#articles" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-300 hover:text-[#f97316] transition-colors mb-8 group">
+              <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              Back to Articles
             </Link>
             <div className="max-w-3xl">
               <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold border ${post.categoryColor} mb-5`}>
@@ -150,7 +151,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               <p className="mt-5 text-lg text-slate-300 leading-relaxed max-w-2xl">
                 {post.excerpt}
               </p>
-              {/* Author & Meta */}
               <div className="mt-8 flex flex-wrap items-center gap-5">
                 <div className="flex items-center gap-3">
                   <div className={`h-11 w-11 rounded-full ${post.author.avatarColor} flex items-center justify-center text-sm font-bold text-white ring-2 ring-white/20`}>
@@ -163,11 +163,11 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 </div>
                 <div className="h-6 w-px bg-slate-600 hidden sm:block" />
                 <div className="flex items-center gap-4 text-xs text-slate-400">
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1.5">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     {post.publishedAt}
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1.5">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     {post.readTime}
                   </span>
@@ -177,21 +177,25 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           </div>
         </div>
 
-        {/* Article Body with Sidebar TOC */}
+        {/* Article Body */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-          <div className="lg:grid lg:grid-cols-[1fr_260px] lg:gap-12">
+          <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-10">
             {/* Main Content */}
-            <article className="max-w-3xl">
-              {/* Mobile TOC */}
+            <article className="max-w-[680px]">
+              {/* Mobile TOC — inline, only before scrolling */}
               {toc.length > 2 && (
                 <div className="lg:hidden mb-8 p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">In this article</h3>
+                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">In this article</h3>
                   <nav className="space-y-1.5">
                     {toc.map((item) => (
                       <a
                         key={item.id}
                         href={`#${item.id}`}
-                        className={`block text-sm text-slate-600 hover:text-[#f97316] transition-colors ${item.level === 3 ? "pl-4 text-slate-400" : "font-medium"}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                        className={`block text-sm text-slate-600 hover:text-[#f97316] transition-colors ${item.level === 3 ? "pl-4 text-slate-400 text-xs" : "font-medium"}`}
                       >
                         {item.text}
                       </a>
@@ -211,15 +215,14 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 )}
               </div>
 
-              {/* Article Footer */}
+              {/* Author Card */}
               <div className="mt-14 pt-8 border-t border-slate-100">
-                {/* Author Card */}
                 <div className="flex items-start gap-4 p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
                   <div className={`h-14 w-14 rounded-full ${post.author.avatarColor} flex items-center justify-center text-base font-bold shrink-0`}>
                     {post.author.name.split(" ").map((n: string) => n[0]).join("")}
                   </div>
                   <div>
-                    <div className="text-xs font-bold uppercase tracking-wider text-[#f97316] mb-1">Written by</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-[#f97316] mb-1">Written by</div>
                     <div className="text-base font-bold text-[#0f172a]">{post.author.name}</div>
                     <div className="text-sm text-slate-500 mt-0.5">{post.author.role}</div>
                   </div>
@@ -227,39 +230,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               </div>
             </article>
 
-            {/* Desktop Sidebar TOC */}
-            {toc.length > 2 && (
-              <aside className="hidden lg:block">
-                <div className="sticky top-24">
-                  <div className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Table of Contents</h3>
-                    <nav className="space-y-1">
-                      {toc.map((item) => (
-                        <a
-                          key={item.id}
-                          href={`#${item.id}`}
-                          className={`block text-sm text-slate-500 hover:text-[#f97316] transition-colors py-1 ${item.level === 3 ? "pl-4 text-xs text-slate-400" : "font-medium text-slate-700"}`}
-                        >
-                          {item.text}
-                        </a>
-                      ))}
-                    </nav>
-                  </div>
-                  {/* Share Card */}
-                  <div className="mt-4 p-5 rounded-2xl bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100/50">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#f97316] mb-3">Share this article</h3>
-                    <div className="flex gap-2">
-                      <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`https://dog-website-xvkh.vercel.app/articles/${slug}`)}`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white border border-slate-100 text-xs font-semibold text-slate-600 hover:border-[#f97316] hover:text-[#f97316] transition-all">
-                        Twitter
-                      </a>
-                      <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://dog-website-xvkh.vercel.app/articles/${slug}`)}`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white border border-slate-100 text-xs font-semibold text-slate-600 hover:border-[#f97316] hover:text-[#f97316] transition-all">
-                        Facebook
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </aside>
-            )}
+            {/* Desktop sidebar rendered by ArticleInteractivity */}
+            <div className="hidden lg:block" />
           </div>
         </div>
 
@@ -275,9 +247,14 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                     href={`/articles/${rp.slug.current}`}
                     className="group flex flex-col rounded-2xl border border-slate-100 bg-white overflow-hidden shadow-sm hover:shadow-lg hover:border-orange-200/50 transition-all duration-300 transform hover:-translate-y-1"
                   >
-                    <div className="h-44 bg-slate-100 overflow-hidden">
-                      <img src={getFirstImageUrl(rp.body || "") || rp.categoryColor} alt={rp.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    </div>
+                    {(() => {
+                      const img = getFirstImageUrl(rp.body || "");
+                      return img ? (
+                        <div className="h-44 bg-slate-100 overflow-hidden">
+                          <img src={img} alt={rp.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                        </div>
+                      ) : null;
+                    })()}
                     <div className="p-5 flex flex-col flex-1">
                       <span className={`inline-flex items-center self-start rounded-full px-2.5 py-0.5 text-[10px] font-semibold border ${rp.categoryColor} mb-3`}>
                         {rp.category}
@@ -319,28 +296,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       </main>
 
       <Footer />
-    </div>
-  );
-}
-
-function ReadingProgress() {
-  return (
-    <div className="fixed top-0 left-0 w-full h-1 z-50">
-      <div id="reading-progress" className="h-full bg-gradient-to-r from-[#f97316] to-amber-400 transition-all duration-100" style={{ width: "0%" }} />
-      <script dangerouslySetInnerHTML={{ __html: `
-        (function() {
-          function update() {
-            var el = document.documentElement;
-            var scrollTop = el.scrollTop || document.body.scrollTop;
-            var scrollHeight = el.scrollHeight - el.clientHeight;
-            var progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
-            var bar = document.getElementById('reading-progress');
-            if (bar) bar.style.width = progress + '%';
-          }
-          window.addEventListener('scroll', update, { passive: true });
-          update();
-        })();
-      `}} />
     </div>
   );
 }
