@@ -23,12 +23,12 @@ function resolveAssetUrls(html: string): string {
 }
 
 async function getPost(slug: string) {
-  const query = `*[_type == "post" && slug.current == $slug][0] {
+  const query = `*[_type == "post" && slug.current == "${slug}"][0] {
     "id": _id, title, slug, category, categoryColor, excerpt,
     body, readTime, publishedAt,
     author->{ name, role, avatarColor }
   }`;
-  const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}&${encodeURIComponent("$slug")}=${encodeURIComponent(slug)}`;
+  const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}`;
   try {
     const res = await fetch(url, { next: { revalidate: 60 } });
     const data = await res.json();
