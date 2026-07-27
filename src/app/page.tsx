@@ -867,13 +867,25 @@ const dogNamesDB: Record<string, Record<string, string[]>> = {
 };
 
 // Helper to extract the first image in an article body html string, with fallback assets
+const SANITY_CDN = "https://cdn.sanity.io/images/x4mx0fr5/production";
+
+const resolveAssetUrl = (url: string) => {
+  if (url.startsWith("asset://image-")) {
+    const rest = url.slice("asset://image-".length);
+    const lastDash = rest.lastIndexOf("-");
+    const ext = rest.slice(lastDash + 1);
+    const ref = rest.slice(0, lastDash);
+    return `${SANITY_CDN}/${ref}.${ext}`;
+  }
+  return url;
+};
+
 const getFirstImageUrl = (bodyContent: string, category: string) => {
   if (!bodyContent) return getFallbackImage(category);
 
-  // Match first img src attribute
   const match = bodyContent.match(/<img[^>]+src=["']([^"']+)["']/i);
   if (match && match[1]) {
-    return match[1];
+    return resolveAssetUrl(match[1]);
   }
 
   return getFallbackImage(category);
