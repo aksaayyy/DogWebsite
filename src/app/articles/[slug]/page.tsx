@@ -119,14 +119,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     <div className="flex flex-col min-h-screen bg-[#fcfbf9]">
       <Header />
 
-      {/* Interactive overlay — progress bar, TOC, floating buttons */}
-      <ArticleInteractivity
-        toc={toc}
-        title={post.title}
-        slug={slug}
-        readTime={post.readTime}
-      />
-
       <main className="flex-1">
         {/* Hero Section */}
         <div className="relative w-full bg-gradient-to-b from-slate-900 to-slate-800">
@@ -209,8 +201,13 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               </div>
             </article>
 
-            {/* Desktop sidebar rendered by ArticleInteractivity */}
-            <div className="hidden lg:block" />
+            {/* Desktop sidebar — TOC + share */}
+            <ArticleInteractivity
+              toc={toc}
+              title={post.title}
+              slug={slug}
+              readTime={post.readTime}
+            />
           </div>
         </div>
 
