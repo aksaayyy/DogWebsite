@@ -38,7 +38,7 @@ export async function GET() {
   const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}`;
 
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: "no-store" });
     const data = await res.json();
     const posts = (data.result || []).map((post: any) => ({
       ...post,
