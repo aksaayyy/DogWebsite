@@ -133,32 +133,44 @@ export default function ArticleInteractivity({ toc, title, slug, readTime }: Art
         <div className="sticky top-24 space-y-4">
           <div className="toc-scroll p-5 rounded-2xl bg-white border border-slate-100 shadow-sm max-h-[calc(100vh-8rem)] overflow-y-auto">
             <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">Table of Contents</h3>
-            <nav className="space-y-0.5">
-              {toc.map((item) => {
-                const isActive = activeId === item.id;
-                return (
-                  <a
-                    key={item.id}
-                    href={`#${item.id}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                    className={`block text-[13px] leading-snug py-1.5 rounded-md transition-all duration-200 ${
-                      item.level === 3 ? "pl-4 text-[12px]" : "font-medium"
-                    } ${
-                      isActive
-                        ? "text-[#f97316] bg-orange-50/80 font-semibold"
-                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
-                    }`}
-                  >
-                    <span className={`inline-block w-1 h-1 rounded-full mr-2 transition-all duration-200 align-middle ${
-                      isActive ? "bg-[#f97316] scale-125" : "bg-slate-300"
-                    }`} />
-                    {item.text}
-                  </a>
-                );
-              })}
+            <nav className="space-y-1">
+              {(() => {
+                let h2Count = 0;
+                return toc.map((item) => {
+                  const isActive = activeId === item.id;
+                  if (item.level === 2) h2Count++;
+                  return (
+                    <a
+                      key={item.id}
+                      href={`#${item.id}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className={`flex items-start gap-2.5 text-[13px] leading-snug py-2 px-2.5 rounded-lg transition-all duration-200 border-l-2 ${
+                        item.level === 3 ? "ml-6 text-[12px]" : "font-medium"
+                      } ${
+                        isActive
+                          ? "text-[#f97316] bg-orange-50/80 font-semibold border-[#f97316]"
+                          : "text-slate-500 hover:text-slate-800 hover:bg-slate-50 border-transparent"
+                      }`}
+                    >
+                      {item.level === 2 ? (
+                        <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0 mt-0.5 ${
+                          isActive ? "bg-[#f97316] text-white" : "bg-slate-100 text-slate-400"
+                        }`}>
+                          {h2Count}
+                        </span>
+                      ) : (
+                        <span className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 ${
+                          isActive ? "bg-[#f97316]" : "bg-slate-300"
+                        }`} />
+                      )}
+                      <span className="line-clamp-2">{item.text}</span>
+                    </a>
+                  );
+                });
+              })()}
             </nav>
           </div>
 
@@ -186,29 +198,44 @@ export default function ArticleInteractivity({ toc, title, slug, readTime }: Art
           {mobileTocOpen && (
             <div className="mt-2 p-4 rounded-2xl bg-white border border-slate-100 shadow-xl max-h-[50vh] overflow-y-auto toc-scroll animate-in slide-in-from-bottom">
               <nav className="space-y-1">
-                {toc.map((item) => {
-                  const isActive = activeId === item.id;
-                  return (
-                    <a
-                      key={item.id}
-                      href={`#${item.id}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" });
-                        setMobileTocOpen(false);
-                      }}
-                      className={`block text-sm leading-snug py-2 rounded-lg transition-all ${
-                        item.level === 3 ? "pl-4 text-xs text-slate-400" : "font-medium"
-                      } ${
-                        isActive
-                          ? "text-[#f97316] bg-orange-50 font-semibold"
-                          : "text-slate-600"
-                      }`}
-                    >
-                      {item.text}
-                    </a>
-                  );
-                })}
+                {(() => {
+                  let h2Count = 0;
+                  return toc.map((item) => {
+                    const isActive = activeId === item.id;
+                    if (item.level === 2) h2Count++;
+                    return (
+                      <a
+                        key={item.id}
+                        href={`#${item.id}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" });
+                          setMobileTocOpen(false);
+                        }}
+                        className={`flex items-start gap-2.5 text-sm leading-snug py-2 px-2.5 rounded-lg transition-all border-l-2 ${
+                          item.level === 3 ? "ml-5 text-xs" : "font-medium"
+                        } ${
+                          isActive
+                            ? "text-[#f97316] bg-orange-50 font-semibold border-[#f97316]"
+                            : "text-slate-600 hover:bg-slate-50 border-transparent"
+                        }`}
+                      >
+                        {item.level === 2 ? (
+                          <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0 mt-0.5 ${
+                            isActive ? "bg-[#f97316] text-white" : "bg-slate-100 text-slate-400"
+                          }`}>
+                            {h2Count}
+                          </span>
+                        ) : (
+                          <span className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 ${
+                            isActive ? "bg-[#f97316]" : "bg-slate-300"
+                          }`} />
+                        )}
+                        <span className="line-clamp-2">{item.text}</span>
+                      </a>
+                    );
+                  });
+                })()}
               </nav>
             </div>
           )}

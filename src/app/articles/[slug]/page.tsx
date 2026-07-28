@@ -182,23 +182,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-10">
             {/* Main Content */}
             <article className="max-w-[680px]">
-              {/* Mobile TOC — inline, only before scrolling */}
-              {toc.length > 2 && (
-                <div className="lg:hidden mb-8 p-5 rounded-2xl bg-white border border-slate-100 shadow-sm">
-                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">In this article</h3>
-                  <nav className="space-y-1.5">
-                    {toc.map((item) => (
-                      <a
-                        key={item.id}
-                        href={`#${item.id}`}
-                        className={`block text-sm text-slate-600 hover:text-[#f97316] transition-colors ${item.level === 3 ? "pl-4 text-slate-400 text-xs" : "font-medium"}`}
-                      >
-                        {item.text}
-                      </a>
-                    ))}
-                  </nav>
-                </div>
-              )}
 
               {/* Article Body */}
               <div className="article-content text-slate-600 leading-relaxed">
