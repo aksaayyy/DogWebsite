@@ -18,37 +18,39 @@ function resolveAssetUrls(html: string): string {
   );
 }
 
+async function sanityFetch(query: string, params: Record<string, string> = {}) {
+  const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, params }),
+    cache: "no-store",
+  });
+  const data = await res.json();
+  return data.result;
+}
+
 async function getPost(slug: string) {
-  const query = `*[_type == "post" && slug.current == $slug][0] {
-    "id": _id, title, slug, category, categoryColor, excerpt,
-    body, readTime, publishedAt,
-    author->{ name, role, avatarColor }
-  }`;
-  const params = { slug };
-  const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}&params=${encodeURIComponent(JSON.stringify(params))}`;
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    const data = await res.json();
-    return data.result ? { ...data.result, body: resolveAssetUrls(data.result.body || "") } : null;
-  } catch {
-    return null;
-  }
+  const result = await sanityFetch(
+    `*[_type == "post" && slug.current == $slug][0] {
+      "id": _id, title, slug, category, categoryColor, excerpt,
+      body, readTime, publishedAt,
+      author->{ name, role, avatarColor }
+    }`,
+    { slug }
+  );
+  return result ? { ...result, body: resolveAssetUrls(result.body || "") } : null;
 }
 
 async function getRelatedPosts(slug: string) {
-  const query = `*[_type == "post" && slug.current != $slug] | order(publishedAt desc) [0...3] {
-    "id": _id, title, slug, category, categoryColor, excerpt, readTime, publishedAt,
-    body, author->{ name, role, avatarColor }
-  }`;
-  const params = { slug };
-  const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}&params=${encodeURIComponent(JSON.stringify(params))}`;
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    const data = await res.json();
-    return (data.result || []).map((p: any) => ({ ...p, body: resolveAssetUrls(p.body || "") }));
-  } catch {
-    return [];
-  }
+  const result = await sanityFetch(
+    `*[_type == "post" && slug.current != $slug] | order(publishedAt desc) [0...3] {
+      "id": _id, title, slug, category, categoryColor, excerpt, readTime, publishedAt,
+      body, author->{ name, role, avatarColor }
+    }`,
+    { slug }
+  );
+  return (result || []).map((p: any) => ({ ...p, body: resolveAssetUrls(p.body || "") }));
 }
 
 function getFirstImageUrl(body: string): string {
