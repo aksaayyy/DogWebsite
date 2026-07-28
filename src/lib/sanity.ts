@@ -82,7 +82,7 @@ export const fallbackPosts: Post[] = [
 
 export async function getPosts(): Promise<Post[]> {
   try {
-    const res = await fetch("/api/posts", { next: { revalidate: 60 } });
+    const res = await fetch("/api/posts");
     if (res.ok) {
       const posts = await res.json();
       if (posts && posts.length > 0) {

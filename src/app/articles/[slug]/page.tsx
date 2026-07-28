@@ -19,14 +19,15 @@ function resolveAssetUrls(html: string): string {
 }
 
 async function getPost(slug: string) {
-  const query = `*[_type == "post" && slug.current == "${slug}"][0] {
+  const query = `*[_type == "post" && slug.current == $slug][0] {
     "id": _id, title, slug, category, categoryColor, excerpt,
     body, readTime, publishedAt,
     author->{ name, role, avatarColor }
   }`;
-  const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}`;
+  const params = { slug };
+  const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}&params=${encodeURIComponent(JSON.stringify(params))}`;
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: "no-store" });
     const data = await res.json();
     return data.result ? { ...data.result, body: resolveAssetUrls(data.result.body || "") } : null;
   } catch {
@@ -35,13 +36,14 @@ async function getPost(slug: string) {
 }
 
 async function getRelatedPosts(slug: string) {
-  const query = `*[_type == "post" && slug.current != "${slug}"] | order(publishedAt desc) [0...3] {
+  const query = `*[_type == "post" && slug.current != $slug] | order(publishedAt desc) [0...3] {
     "id": _id, title, slug, category, categoryColor, excerpt, readTime, publishedAt,
     body, author->{ name, role, avatarColor }
   }`;
-  const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}`;
+  const params = { slug };
+  const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}&params=${encodeURIComponent(JSON.stringify(params))}`;
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: "no-store" });
     const data = await res.json();
     return (data.result || []).map((p: any) => ({ ...p, body: resolveAssetUrls(p.body || "") }));
   } catch {
@@ -57,20 +59,34 @@ function getFirstImageUrl(body: string): string {
 
 function extractTableOfContents(body: string) {
   const headings: { id: string; text: string; level: number }[] = [];
+  const idCounts: Record<string, number> = {};
   const regex = /<h([23])[^>]*>(.*?)<\/h\1>/gi;
   let match;
   while ((match = regex.exec(body)) !== null) {
     const text = match[2].replace(/<[^>]+>/g, "").trim();
-    const id = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    let id = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    if (idCounts[id]) {
+      idCounts[id]++;
+      id = `${id}-${idCounts[id]}`;
+    } else {
+      idCounts[id] = 1;
+    }
     headings.push({ id, text, level: parseInt(match[1]) });
   }
   return headings;
 }
 
 function addIdsToHeadings(html: string): string {
+  const idCounts: Record<string, number> = {};
   return html.replace(/<h([23])[^>]*>(.*?)<\/h\1>/gi, (_match, level, content) => {
     const text = content.replace(/<[^>]+>/g, "").trim();
-    const id = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    let id = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    if (idCounts[id]) {
+      idCounts[id]++;
+      id = `${id}-${idCounts[id]}`;
+    } else {
+      idCounts[id] = 1;
+    }
     return `<h${level} id="${id}">${content}</h${level}>`;
   });
 }

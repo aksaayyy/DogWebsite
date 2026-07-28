@@ -92,7 +92,7 @@ export default function ArticleInteractivity({ toc, title, slug, readTime }: Art
   }, []);
 
   const handleShare = useCallback(async () => {
-    const url = `https://dog-website-xvkh.vercel.app/articles/${slug}`;
+    const url = typeof window !== "undefined" ? `${window.location.origin}/articles/${slug}` : `https://dog-website-xvkh.vercel.app/articles/${slug}`;
     if (navigator.share) {
       try {
         await navigator.share({ title, url });
@@ -104,7 +104,7 @@ export default function ArticleInteractivity({ toc, title, slug, readTime }: Art
     }
   }, [title, slug]);
 
-  if (toc.length <= 2) return null;
+  const showToc = toc.length > 2;
 
   return (
     <>
@@ -128,7 +128,8 @@ export default function ArticleInteractivity({ toc, title, slug, readTime }: Art
         )}
       </div>
 
-      {/* Desktop TOC Sidebar */}
+      {/* Desktop TOC Sidebar — only shown when enough headings */}
+      {showToc && (
       <aside className="hidden lg:block">
         <div className="sticky top-24 space-y-4">
           <div className="toc-scroll p-5 rounded-2xl bg-white border border-slate-100 shadow-sm max-h-[calc(100vh-8rem)] overflow-y-auto">
@@ -184,6 +185,7 @@ export default function ArticleInteractivity({ toc, title, slug, readTime }: Art
           </div>
         </div>
       </aside>
+      )}
 
       {/* Mobile TOC — collapsible accordion */}
       {hasScrolled && (
