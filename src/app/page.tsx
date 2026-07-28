@@ -544,69 +544,82 @@ export default function Home() {
         </section>
       </main>
 
-      {/* Article Detail Modal — quick browse */}
+      {/* Article Detail Modal — quick preview */}
       {selectedPost && (
         <>
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in cursor-pointer" onClick={() => setSelectedPost(null)} />
 
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 lg:p-12 pointer-events-none">
-            <div className="relative w-full max-w-4xl max-h-[92vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200/60 animate-scale-in flex flex-col pointer-events-auto mx-auto">
+            <div className="relative w-full max-w-2xl max-h-[88vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200/60 animate-scale-in flex flex-col pointer-events-auto mx-auto">
 
-              {/* Sticky Close Button */}
-              <button
-                onClick={() => setSelectedPost(null)}
-                className="absolute top-5 right-5 z-10 h-10 w-10 rounded-full bg-white/90 hover:bg-orange-50 flex items-center justify-center text-slate-500 hover:text-brand-orange font-bold text-base shadow-md border border-slate-200/60 transition-all hover:scale-105 cursor-pointer"
-              >
-                ✕
-              </button>
+              {/* Sticky Top Bar — Share + Close */}
+              <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-3 bg-white/95 backdrop-blur-sm border-b border-slate-100/60">
+                <button
+                  onClick={async () => {
+                    const url = `${window.location.origin}/articles/${selectedPost.slug.current}`;
+                    try {
+                      if (navigator.share) {
+                        await navigator.share({ title: selectedPost.title, url });
+                      } else {
+                        await navigator.clipboard.writeText(url);
+                      }
+                    } catch {}
+                  }}
+                  className="h-9 w-9 rounded-full bg-slate-100 hover:bg-orange-50 flex items-center justify-center text-slate-500 hover:text-brand-orange transition-all cursor-pointer"
+                  title="Copy link"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                </button>
+                <button
+                  onClick={() => setSelectedPost(null)}
+                  className="h-9 w-9 rounded-full bg-slate-100 hover:bg-orange-50 flex items-center justify-center text-slate-500 hover:text-brand-orange font-bold text-sm transition-all cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
 
-              {/* Scrollable Content Area */}
+              {/* Scrollable Content */}
               <div className="overflow-y-auto flex-1 overscroll-contain">
 
-                {/* Cover Image Hero */}
-                <div className="w-full h-56 sm:h-64 md:h-72 bg-slate-100 relative">
+                {/* Cover Image */}
+                <div className="w-full h-48 sm:h-56 bg-slate-100 relative">
                   <img
                     src={getFirstImageUrl(selectedPost.body, selectedPost.category)}
                     alt={selectedPost.title}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
                 </div>
 
-                {/* Article Header & Body */}
-                <div className="px-8 sm:px-12 md:px-16 lg:px-20 py-8 sm:py-10">
-                  <div className="max-w-2xl mx-auto">
+                {/* Preview Content */}
+                <div className="px-6 sm:px-10 py-6 sm:py-8">
+                  <div className="max-w-lg mx-auto">
 
-                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold border ${selectedPost.categoryColor} mb-5`}>
+                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold border ${selectedPost.categoryColor} mb-4`}>
                       {selectedPost.category}
                     </span>
 
-                    <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold text-brand-navy leading-tight tracking-tight">
+                    <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-extrabold text-brand-navy leading-tight tracking-tight">
                       {selectedPost.title}
                     </h2>
 
-                    <div className="mt-6 flex items-center gap-4 pb-8 mb-8 border-b border-slate-100">
-                      <div className={`h-11 w-11 rounded-full ${selectedPost.author.avatarColor} flex items-center justify-center text-sm font-bold shrink-0`}>
+                    <div className="mt-4 flex items-center gap-3">
+                      <div className={`h-9 w-9 rounded-full ${selectedPost.author.avatarColor} flex items-center justify-center text-xs font-bold shrink-0`}>
                         {selectedPost.author.name.split(" ").map(n => n[0]).join("")}
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-brand-navy">{selectedPost.author.name}</div>
-                        <div className="text-xs text-slate-400 mt-0.5">{selectedPost.author.role} · {selectedPost.publishedAt} · {selectedPost.readTime}</div>
+                        <div className="text-xs font-bold text-brand-navy">{selectedPost.author.name}</div>
+                        <div className="text-[10px] text-slate-400">{selectedPost.author.role} · {selectedPost.readTime}</div>
                       </div>
                     </div>
 
-                    <div className="prose prose-orange max-w-none text-slate-600 leading-relaxed text-base space-y-5 article-content">
-                      {selectedPost.body.trim().startsWith("<") ? (
-                        <div dangerouslySetInnerHTML={{ __html: selectedPost.body }} />
-                      ) : (
-                        selectedPost.body.split("\n\n").map((para, i) => (
-                          <p key={i}>{para}</p>
-                        ))
-                      )}
-                    </div>
+                    {/* Excerpt — the preview */}
+                    <p className="mt-5 text-sm sm:text-base text-slate-600 leading-relaxed">
+                      {selectedPost.excerpt}
+                    </p>
 
-                    {/* Read Full Article CTA */}
-                    <div className="mt-10 pt-6 border-t border-slate-100 flex justify-center">
+                    {/* Read Full Article CTA — prominent */}
+                    <div className="mt-7 flex flex-col items-center gap-3">
                       <Link
                         href={`/articles/${selectedPost.slug.current}`}
                         onClick={() => setSelectedPost(null)}
@@ -615,16 +628,7 @@ export default function Home() {
                         Read Full Article
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                       </Link>
-                    </div>
-
-                    <div className="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
-                      <span>Published by Woof & Wag CMS</span>
-                      <button
-                        onClick={() => setSelectedPost(null)}
-                        className="font-bold text-brand-navy hover:text-brand-orange transition-colors cursor-pointer"
-                      >
-                        ← Back to Articles
-                      </button>
+                      <span className="text-[10px] text-slate-400">{selectedPost.readTime} · Continue reading on the full page</span>
                     </div>
 
                   </div>
