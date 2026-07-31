@@ -33,6 +33,9 @@ export default function RootLayout({
       lang="en"
       className={`${outfit.variable} ${inter.variable} h-full antialiased`}
     >
+      <head>
+        <meta name="google-site-verification" content="wvzcMGr8k30lWWATmm7NNWET5KBV60yTWCzVyl0-Hxw" />
+      </head>
       <body className="min-h-full flex flex-col bg-[#fcfbf9] text-[#0f172a]">
         {children}
       </body>
