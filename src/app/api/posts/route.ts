@@ -19,15 +19,14 @@ function resolveAssetUrls(html: string): string {
 }
 
 export async function GET() {
-  // Query metadata for cards plus a small slice of body just for extracting the thumbnail image
-  const query = `*[_type == "post"] {
+  const query = `*[_type == "post"] | order(publishedAt desc) {
     "id": _id,
     title,
     slug,
     category,
     categoryColor,
     excerpt,
-    "body": string::slice(body, 0, 1000),
+    body,
     readTime,
     publishedAt,
     author->{
@@ -41,8 +40,7 @@ export async function GET() {
 
   try {
     const res = await fetch(url, {
-      next: { revalidate: 600 },
-      headers: { "Cache-Control": "max-age=600, s-maxage=600, stale-while-revalidate=86400" }
+      next: { revalidate: 300 },
     });
     const data = await res.json();
     const posts = (data.result || []).map((post: any) => ({
@@ -51,7 +49,7 @@ export async function GET() {
     }));
     return NextResponse.json(posts, {
       headers: {
-        "Cache-Control": "public, max-age=600, s-maxage=3600, stale-while-revalidate=86400",
+        "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
       },
     });
   } catch (error) {

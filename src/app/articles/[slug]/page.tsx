@@ -51,7 +51,7 @@ const getRelatedPosts = cache(async (slug: string) => {
   const result = await sanityFetch(
     `*[_type == "post" && slug.current != $slug] | order(publishedAt desc) [0...3] {
       "id": _id, title, slug, category, categoryColor, excerpt, readTime, publishedAt,
-      "body": string::slice(body, 0, 1000), author->{ name, role, avatarColor }
+      body, author->{ name, role, avatarColor }
     }`,
     { slug }
   );
