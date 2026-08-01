@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 
 interface TocItem {
   id: string;
@@ -16,6 +17,7 @@ interface ArticleInteractivityProps {
 }
 
 export default function ArticleInteractivity({ toc, title, slug, readTime }: ArticleInteractivityProps) {
+  const router = useRouter();
   const [activeId, setActiveId] = useState("");
   const [progress, setProgress] = useState(0);
   const [showFloating, setShowFloating] = useState(false);
@@ -55,6 +57,57 @@ export default function ArticleInteractivity({ toc, title, slug, readTime }: Art
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Intercept links inside .article-content for smooth SPA navigation and slug resolution
+  useEffect(() => {
+    const handleArticleLinkClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement).closest("a");
+      if (!target) return;
+      const href = target.getAttribute("href");
+      if (!href) return;
+
+      if (href.startsWith("#")) {
+        e.preventDefault();
+        const id = href.slice(1);
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+        return;
+      }
+
+      if (!href.startsWith("http://") && !href.startsWith("https://")) {
+        e.preventDefault();
+        let cleanSlug = href
+          .replace(/^\/articles\//, "")
+          .replace(/^\//, "")
+          .replace(/\/$/, "")
+          .replace(/\.\.\//g, "");
+
+        const slugMap: Record<string, string> = {
+          "dog-food-allergies-symptoms-diagnosis-and-the-best-hypoallergenic-diets": "dog-food-allergies-in-dogs-symptoms-diagnosis-and-the-best-hypoallergenic-diets",
+          "complete-dog-nutrition-guide-2026": "the-complete-dog-nutrition-guide-what-every-owner-needs-to-know-2026",
+          "canine-exercise-routine-habit-formation-2026": "how-to-build-an-exercise-routine-for-your-dog-the-neuroscience-of-canine-habit-formation-2026-guide",
+          "dog-gut-microbiome-behavior-immunity-2026": "dog-gut-microbiome-how-it-affects-behavior-immunity-skin-2026-guide",
+          "how-to-stop-leash-pulling-the-force-free-walking-guide-2026": "how-to-stop-leash-pulling-the-force-free-walking-guide-evidence-based-step-by-step",
+        };
+
+        if (slugMap[cleanSlug]) {
+          cleanSlug = slugMap[cleanSlug];
+        }
+
+        if (cleanSlug) {
+          router.push(`/articles/${cleanSlug}`);
+        }
+      }
+    };
+
+    const container = document.querySelector(".article-content");
+    if (container) {
+      container.addEventListener("click", handleArticleLinkClick as EventListener);
+      return () => container.removeEventListener("click", handleArticleLinkClick as EventListener);
+    }
+  }, [router]);
 
   // Scroll-spy via IntersectionObserver
   useEffect(() => {

@@ -1,19 +1,24 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { cache } from "react";
 import ArticleInteractivity from "./ArticleInteractivity";
+
+export const revalidate = 3600; // Revalidate every 1 hour (ISR)
+export const dynamicParams = true;
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "x4mx0fr5";
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
 const SANITY_CDN = `https://cdn.sanity.io/images/${projectId}/${dataset}`;
 
 function resolveAssetUrls(html: string): string {
+  if (typeof html !== "string") return "";
   return html.replace(
     /asset:\/\/(image-[a-f0-9]+-\d+x\d+-(?:jpg|jpeg|png|gif|webp))/gi,
     (_match, assetId: string) => {
       const lastDash = assetId.lastIndexOf("-");
       const ext = assetId.slice(lastDash + 1);
       const ref = assetId.slice(6, lastDash);
-      return `${SANITY_CDN}/${ref}.${ext}`;
+      return `${SANITY_CDN}/${ref}.${ext}?auto=format&q=80`;
     }
   );
 }
@@ -24,13 +29,13 @@ async function sanityFetch(query: string, params: Record<string, string> = {}) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query, params }),
-    cache: "no-store",
+    next: { revalidate: 3600 },
   });
   const data = await res.json();
   return data.result;
 }
 
-async function getPost(slug: string) {
+const getPost = cache(async (slug: string) => {
   const result = await sanityFetch(
     `*[_type == "post" && slug.current == $slug][0] {
       "id": _id, title, slug, category, categoryColor, excerpt,
@@ -40,18 +45,18 @@ async function getPost(slug: string) {
     { slug }
   );
   return result ? { ...result, body: resolveAssetUrls(result.body || "") } : null;
-}
+});
 
-async function getRelatedPosts(slug: string) {
+const getRelatedPosts = cache(async (slug: string) => {
   const result = await sanityFetch(
     `*[_type == "post" && slug.current != $slug] | order(publishedAt desc) [0...3] {
       "id": _id, title, slug, category, categoryColor, excerpt, readTime, publishedAt,
-      body, author->{ name, role, avatarColor }
+      "body": string::slice(body, 0, 1000), author->{ name, role, avatarColor }
     }`,
     { slug }
   );
   return (result || []).map((p: any) => ({ ...p, body: resolveAssetUrls(p.body || "") }));
-}
+});
 
 function getFirstImageUrl(body: string): string {
   if (!body) return "";
@@ -80,7 +85,9 @@ function extractTableOfContents(body: string) {
 
 function addIdsToHeadings(html: string): string {
   const idCounts: Record<string, number> = {};
-  return html.replace(/<h([23])[^>]*>(.*?)<\/h\1>/gi, (_match, level, content) => {
+  // Inject lazy loading on img tags and add heading IDs
+  const withLazyImages = html.replace(/<img\s+/gi, '<img loading="lazy" decoding="async" ');
+  return withLazyImages.replace(/<h([23])[^>]*>(.*?)<\/h\1>/gi, (_match, level, content) => {
     const text = content.replace(/<[^>]+>/g, "").trim();
     let id = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
     if (idCounts[id]) {
@@ -142,7 +149,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         <div className="relative w-full bg-gradient-to-b from-slate-900 to-slate-800">
           {heroImage && (
             <div className="absolute inset-0">
-              <img src={heroImage} alt={post.title} className="w-full h-full object-cover opacity-30" />
+              <img src={heroImage} alt={post.title} className="w-full h-full object-cover opacity-30" fetchPriority="high" />
               <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 via-slate-900/50 to-slate-900" />
             </div>
           )}

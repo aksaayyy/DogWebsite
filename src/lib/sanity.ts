@@ -9,7 +9,7 @@ export const client = createClient({
   projectId,
   dataset,
   apiVersion: "2024-01-01",
-  useCdn: false,
+  useCdn: true,
 });
 
 export interface Post {
@@ -82,7 +82,9 @@ export const fallbackPosts: Post[] = [
 
 export async function getPosts(): Promise<Post[]> {
   try {
-    const res = await fetch("/api/posts");
+    const res = await fetch("/api/posts", {
+      next: { revalidate: 600 },
+    });
     if (res.ok) {
       const posts = await res.json();
       if (posts && posts.length > 0) {
