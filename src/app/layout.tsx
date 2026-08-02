@@ -35,6 +35,7 @@ export default function RootLayout({
     >
       <head>
         <meta name="google-site-verification" content="wvzcMGr8k30lWWATmm7NNWET5KBV60yTWCzVyl0-Hxw" />
+        <meta name="impact-site-verification" value="2dd94fec-5809-43ab-8295-2f76caee5c54" />
       </head>
       <body className="min-h-full flex flex-col bg-[#fcfbf9] text-[#0f172a]">
         {children}
