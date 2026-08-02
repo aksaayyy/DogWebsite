@@ -24,12 +24,12 @@ function resolveAssetUrls(html: string): string {
 }
 
 async function sanityFetch(query: string, params: Record<string, string> = {}) {
-  const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}`;
+  const url = `https://${projectId}.api.sanity.io/v2024-01-01/data/query/${dataset}`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query, params }),
-    next: { revalidate: 3600 },
+    next: { revalidate: 0 },
   });
   const data = await res.json();
   return data.result;
