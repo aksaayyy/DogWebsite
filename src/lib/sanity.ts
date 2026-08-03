@@ -97,3 +97,50 @@ export async function getPosts(): Promise<Post[]> {
 
   return fallbackPosts;
 }
+
+export async function getPostsServer(): Promise<Post[]> {
+  const query = `*[_type == "post"] | order(publishedAt desc) {
+    "id": _id,
+    title,
+    slug,
+    category,
+    categoryColor,
+    excerpt,
+    body,
+    readTime,
+    publishedAt,
+    author->{
+      name,
+      role,
+      avatarColor
+    }
+  }`;
+
+  const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?query=${encodeURIComponent(query)}`;
+
+  try {
+    const res = await fetch(url, {
+      next: { revalidate: 0 },
+    });
+    if (!res.ok) {
+      throw new Error(`Sanity HTTP error: ${res.status}`);
+    }
+    const data = await res.json();
+    const posts = (data.result || []).map((post: any) => ({
+      ...post,
+      body: post.body ? post.body.replace(
+        /asset:\/\/(image-[a-f0-9]+-\d+x\d+-(?:jpg|jpeg|png|gif|webp))/gi,
+        (_match: string, assetId: string) => {
+          const lastDash = assetId.lastIndexOf("-");
+          const ext = assetId.slice(lastDash + 1);
+          const ref = assetId.slice(6, lastDash);
+          return `https://cdn.sanity.io/images/${projectId}/${dataset}/${ref}.${ext}?auto=format&q=80`;
+        }
+      ) : "",
+    }));
+    return posts.length > 0 ? posts : fallbackPosts;
+  } catch (error) {
+    console.warn("Sanity server-side fetch failed, using fallback:", error);
+    return fallbackPosts;
+  }
+}

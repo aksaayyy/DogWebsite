@@ -63,11 +63,19 @@ export default function ContactPage() {
                 We review care questions and partnership applications daily. Expect a response in under **24 hours**.
               </p>
             </div>
-            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-              <h3 className="font-display font-bold text-brand-navy text-sm mb-3">Email Inquiries</h3>
-              <p className="text-xs text-brand-orange font-semibold">
-                hello@woofandwag.com
-              </p>
+            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+              <div>
+                <h3 className="font-display font-bold text-brand-navy text-sm mb-1">General Inquiries</h3>
+                <p className="text-xs text-brand-orange font-semibold">
+                  hello@woofnwagg.com
+                </p>
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-brand-navy text-sm mb-1">Partnerships & Media</h3>
+                <p className="text-xs text-brand-orange font-semibold">
+                  partnerships@woofnwagg.com
+                </p>
+              </div>
             </div>
           </div>
 
