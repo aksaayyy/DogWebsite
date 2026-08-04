@@ -20,8 +20,30 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://woofnwagg.com"),
   title: "Woof & Wag | Premium Dog Blog & Community",
   description: "A modern, interactive platform for dog lovers. Discover premium articles, training tips, breed guides, and meet other dog enthusiasts.",
+  openGraph: {
+    title: "Woof & Wag",
+    description: "A modern, interactive platform for dog lovers. Discover premium articles, training tips, breed guides, and meet other dog enthusiasts.",
+    url: "https://woofnwagg.com",
+    siteName: "Woof & Wag",
+    locale: "en_US",
+    type: "website",
+    images: [
+      {
+        url: "/assets/og-default.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Woof & Wag — Premium Dog Blog & Community",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Woof & Wag",
+    description: "A modern, interactive platform for dog lovers. Discover premium articles, training tips, breed guides, and meet other dog enthusiasts.",
+  },
   verification: {
     google: "wvzcMGr8k30lWWATmm7NNWET5KBV60yTWCzVyl0-Hxw",
   },
@@ -41,6 +63,18 @@ export default function RootLayout({
       className={`${outfit.variable} ${inter.variable} h-full antialiased`}
     >
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Woof & Wag",
+              url: "https://woofnwagg.com",
+              description: "Premium dog care blog and community featuring veterinarian-reviewed articles on health, training, and nutrition.",
+            }),
+          }}
+        />
         {/* impact.com site verification — uses non-standard 'value' attr, injected via script */}
         <Script
           id="impact-verification"

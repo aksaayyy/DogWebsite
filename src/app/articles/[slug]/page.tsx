@@ -39,7 +39,7 @@ const getPost = cache(async (slug: string) => {
   const result = await sanityFetch(
     `*[_type == "post" && slug.current == $slug][0] {
       "id": _id, title, slug, category, categoryColor, excerpt,
-      body, readTime, publishedAt,
+      body, readTime, publishedAt, seoTitle, seoDescription,
       author->{ name, role, avatarColor }
     }`,
     { slug }
@@ -62,6 +62,12 @@ function getFirstImageUrl(body: string): string {
   if (!body) return "";
   const match = body.match(/<img[^>]+src=["']([^"']+)["']/i);
   return match?.[1] || "";
+}
+
+function getCategoryFallbackImage(category: string): string {
+  if (category === "Nutrition") return "/assets/fallback-nutrition.png";
+  if (category === "Training & Behavior") return "/assets/fallback-training.png";
+  return "/assets/fallback-health.png";
 }
 
 function extractTableOfContents(body: string) {
@@ -104,10 +110,27 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) return { title: "Article Not Found | Woof & Wag" };
+  const title = post.seoTitle || post.title;
+  const description = post.seoDescription || post.excerpt;
+  const heroImage = getFirstImageUrl(post.body) || getCategoryFallbackImage(post.category);
   return {
-    title: `${post.title} | Woof & Wag`,
-    description: post.excerpt,
-    openGraph: { title: post.title, description: post.excerpt, type: "article" },
+    title: `${title} | Woof & Wag`,
+    description,
+    alternates: { canonical: `/articles/${slug}` },
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      publishedTime: post.publishedAt,
+      url: `https://woofnwagg.com/articles/${slug}`,
+      images: [{ url: heroImage, width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [heroImage],
+    },
   };
 }
 
@@ -136,12 +159,39 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     );
   }
 
-  const heroImage = getFirstImageUrl(post.body);
+  const heroImage = getFirstImageUrl(post.body) || getCategoryFallbackImage(post.category);
   const toc = extractTableOfContents(post.body);
   const processedBody = addIdsToHeadings(post.body);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#fcfbf9]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: post.title,
+            description: post.excerpt,
+            image: heroImage || undefined,
+            author: {
+              "@type": "Person",
+              name: post.author.name,
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "Woof & Wag",
+              url: "https://woofnwagg.com",
+            },
+            datePublished: post.publishedAt,
+            dateModified: post.publishedAt,
+            mainEntityOfPage: {
+              "@type": "WebPage",
+              "@id": `https://woofnwagg.com/articles/${slug}`,
+            },
+          }),
+        }}
+      />
       <Header />
 
       <main className="flex-1">
@@ -325,10 +375,12 @@ function Footer() {
           <p className="text-xs text-slate-400">&copy; 2026 Woof &amp; Wag. All rights reserved.</p>
         </div>
         <div className="flex flex-wrap justify-center gap-5 mt-6 pt-6 border-t border-slate-100 text-sm text-slate-500">
-          <a href="/" className="hover:text-[#f97316] transition-colors">About Us</a>
-          <a href="/" className="hover:text-[#f97316] transition-colors">Contact</a>
-          <a href="/" className="hover:text-[#f97316] transition-colors">Privacy Policy</a>
-          <a href="/" className="hover:text-[#f97316] transition-colors">Terms of Service</a>
+          <a href="/about" className="hover:text-[#f97316] transition-colors">About Us</a>
+          <a href="/editorial-policy" className="hover:text-[#f97316] transition-colors">Editorial Policy</a>
+          <a href="/affiliate-disclosure" className="hover:text-[#f97316] transition-colors">Affiliate Disclosure</a>
+          <a href="/contact" className="hover:text-[#f97316] transition-colors">Contact</a>
+          <a href="/privacy" className="hover:text-[#f97316] transition-colors">Privacy Policy</a>
+          <a href="/terms" className="hover:text-[#f97316] transition-colors">Terms of Service</a>
         </div>
       </div>
     </footer>
