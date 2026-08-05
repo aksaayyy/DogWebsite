@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     google: "wvzcMGr8k30lWWATmm7NNWET5KBV60yTWCzVyl0-Hxw",
   },
   other: {
-    "impact-site-verification": "2dd94fec-5809-43ab-8295-2f76caee5c54",
+    "impact-site-verification": "905edd6b-8c82-4598-98c6-4f392d7d9364",
   },
 };
 
@@ -80,7 +80,7 @@ export default function RootLayout({
           id="impact-verification"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
-            __html: `document.head.insertAdjacentHTML('beforeend','<meta name="impact-site-verification" value="2dd94fec-5809-43ab-8295-2f76caee5c54">');`,
+            __html: `document.head.insertAdjacentHTML('beforeend','<meta name="impact-site-verification" value="905edd6b-8c82-4598-98c6-4f392d7d9364">');`,
           }}
         />
       </head>
