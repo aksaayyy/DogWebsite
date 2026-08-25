@@ -42,6 +42,10 @@ export async function GET() {
     const res = await fetch(url, {
       next: { revalidate: 300 },
     });
+    if (!res.ok) {
+      console.error(`Sanity fetch failed: ${res.status} ${res.statusText}`);
+      return NextResponse.json([], { status: 502 });
+    }
     const data = await res.json();
     const posts = (data.result || []).map((post: any) => ({
       ...post,
@@ -49,7 +53,7 @@ export async function GET() {
     }));
     return NextResponse.json(posts, {
       headers: {
-        "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
+        "Cache-Control": "public, max-age=300, s-maxage=600, stale-while-revalidate=3600",
       },
     });
   } catch (error) {

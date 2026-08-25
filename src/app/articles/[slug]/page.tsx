@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { cache } from "react";
 import ArticleInteractivity from "./ArticleInteractivity";
 
@@ -23,16 +24,32 @@ function resolveAssetUrls(html: string): string {
   );
 }
 
+const SANITY_FETCH_REVALIDATE = 600; // Serve cached Sanity responses for 10 min
+
 async function sanityFetch(query: string, params: Record<string, string> = {}) {
-  const url = `https://${projectId}.api.sanity.io/v2024-01-01/data/query/${dataset}`;
+  const search = new URLSearchParams({ query });
+  for (const [key, value] of Object.entries(params)) {
+    search.set(`$${key}`, JSON.stringify(value));
+  }
+  const url = `https://${projectId}.apicdn.sanity.io/v2024-01-01/data/query/${dataset}?${search.toString()}`;
   const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, params }),
-    next: { revalidate: 0 },
+    next: { revalidate: SANITY_FETCH_REVALIDATE },
   });
+  if (!res.ok) {
+    throw new Error(`Sanity query failed: ${res.status} ${res.statusText}`);
+  }
   const data = await res.json();
   return data.result;
+}
+
+export async function generateStaticParams() {
+  try {
+    const result = await sanityFetch(`*[_type == "post" && defined(slug.current)].slug.current`);
+    return (result || []).map((slug: string) => ({ slug }));
+  } catch (error) {
+    console.error("generateStaticParams failed, falling back to on-demand rendering:", error);
+    return [];
+  }
 }
 
 const getPost = cache(async (slug: string) => {
@@ -139,24 +156,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const [post, relatedPosts] = await Promise.all([getPost(slug), getRelatedPosts(slug)]);
 
   if (!post) {
-    return (
-      <div className="flex flex-col min-h-screen bg-[#fcfbf9]">
-        <Header />
-        <main className="flex-1 flex items-center justify-center px-4">
-          <div className="text-center py-20">
-            <div className="w-20 h-20 mx-auto rounded-full bg-orange-50 flex items-center justify-center mb-6">
-              <span className="text-4xl">🐕</span>
-            </div>
-            <h1 className="font-[var(--font-display)] text-2xl font-bold text-[#0f172a]">Article Not Found</h1>
-            <p className="text-slate-500 mt-2 text-sm max-w-md mx-auto">The article you are looking for does not exist or has been moved.</p>
-            <Link href="/" className="inline-flex items-center gap-2 mt-6 rounded-full bg-[#0f172a] px-6 py-3 text-sm font-semibold text-white hover:bg-[#f97316] transition-all duration-300">
-              ← Back to Home
-            </Link>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
+    notFound();
   }
 
   const heroImage = getFirstImageUrl(post.body) || getCategoryFallbackImage(post.category);

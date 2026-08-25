@@ -120,7 +120,7 @@ export async function getPostsServer(): Promise<Post[]> {
 
   try {
     const res = await fetch(url, {
-      next: { revalidate: 0 },
+      next: { revalidate: 600 },
     });
     if (!res.ok) {
       throw new Error(`Sanity HTTP error: ${res.status}`);
