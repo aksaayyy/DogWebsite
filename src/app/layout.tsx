@@ -20,13 +20,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://woofnwagg.com"),
+  metadataBase: new URL("https://www.woofnwagg.com"),
   title: "Woof & Wag | Premium Dog Blog & Community",
   description: "A modern, interactive platform for dog lovers. Discover premium articles, training tips, breed guides, and meet other dog enthusiasts.",
   openGraph: {
     title: "Woof & Wag",
     description: "A modern, interactive platform for dog lovers. Discover premium articles, training tips, breed guides, and meet other dog enthusiasts.",
-    url: "https://woofnwagg.com",
+    url: "https://www.woofnwagg.com",
     siteName: "Woof & Wag",
     locale: "en_US",
     type: "website",
@@ -70,7 +70,7 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "Organization",
               name: "Woof & Wag",
-              url: "https://woofnwagg.com",
+              url: "https://www.woofnwagg.com",
               description: "Premium dog care blog and community featuring veterinarian-reviewed articles on health, training, and nutrition.",
             }),
           }}

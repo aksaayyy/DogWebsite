@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/admin/", "/api/"],
       },
     ],
-    sitemap: "https://woofnwagg.com/sitemap.xml",
-    host: "https://woofnwagg.com",
+    sitemap: "https://www.woofnwagg.com/sitemap.xml",
+    host: "https://www.woofnwagg.com",
   };
 }

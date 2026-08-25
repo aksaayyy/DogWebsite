@@ -139,7 +139,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description,
       type: "article",
       publishedTime: post.publishedAt,
-      url: `https://woofnwagg.com/articles/${slug}`,
+      url: `https://www.woofnwagg.com/articles/${slug}`,
       images: [{ url: heroImage, width: 1200, height: 630, alt: title }],
     },
     twitter: {
@@ -181,13 +181,13 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             publisher: {
               "@type": "Organization",
               name: "Woof & Wag",
-              url: "https://woofnwagg.com",
+              url: "https://www.woofnwagg.com",
             },
             datePublished: post.publishedAt,
             dateModified: post.publishedAt,
             mainEntityOfPage: {
               "@type": "WebPage",
-              "@id": `https://woofnwagg.com/articles/${slug}`,
+              "@id": `https://www.woofnwagg.com/articles/${slug}`,
             },
           }),
         }}
